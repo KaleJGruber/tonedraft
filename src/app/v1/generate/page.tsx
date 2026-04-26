@@ -60,7 +60,8 @@ export default function GeneratePage() {
     setLoading(false);
   }
 
-  async function openInEditor(generatedText) {
+  async function openInEditor(generatedText: string) {
+
     const res = await fetch("/api/drafts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
