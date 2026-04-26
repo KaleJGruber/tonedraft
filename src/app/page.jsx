@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import FreeMessageCounter from "./components/FreeMessageCounter";
+import { FreeMessageCounter } from "./components/FreeMessageCounter";
+
 
 
 export default function Home() {
