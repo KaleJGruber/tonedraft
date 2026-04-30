@@ -40,13 +40,11 @@ if (freeUsed >= 5) {
 async function generate() {
   if (!email.trim()) return;
 
-  // ⭐ Anonymous user limit
   if (freeUsed >= 5) {
-    alert("You've used all 5 free messages. Create an account to continue.");
+    alert("You've used all 5 free messages. Please upgrade to continue.");
     return;
   }
 
-  // ⭐ Increment anonymous usage
   const newUsed = freeUsed + 1;
   localStorage.setItem("freeMessagesUsed", newUsed.toString());
   setFreeUsed(newUsed);
@@ -57,33 +55,32 @@ async function generate() {
   setAction("");
   setReply("");
 
+  try {
+    const res = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email, // <-- FIXED
+        mode,
+        toneProfile: JSON.parse(localStorage.getItem("toneProfile") || "{}"),
+        toneSample: localStorage.getItem("toneSample") || "",
+        userId: null,
+      }),
+    });
 
-    try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          mode,
-          toneProfile: JSON.parse(localStorage.getItem("toneProfile") || "{}"),
-          toneSample: localStorage.getItem("toneSample") || "",
-          userId: localStorage.getItem("userId"), // ⭐ ADD THIS
-        }),
-      });
-      
+    if (!res.ok) throw new Error("Request failed");
 
-      if (!res.ok) throw new Error("Request failed");
-
-      const data = await res.json();
-      setSummary(data.summary || "");
-      setAction(data.action || "");
-      setReply(data.reply || "");
-    } catch (err) {
-      setError("Something went wrong. Try again.");
-    } finally {
-      setLoading(false);
-    }
+    const data = await res.json();
+    setSummary(data.summary || "");
+    setAction(data.action || "");
+    setReply(data.reply || "");
+  } catch (err) {
+    setError("Something went wrong. Try again.");
+  } finally {
+    setLoading(false);
   }
+}
+
 
   function copyReply() {
     if (!reply) return;
