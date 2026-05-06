@@ -18,20 +18,15 @@ export async function POST(req: Request) {
 
   let event;
 
-  try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
-  } catch (err: any) {
-    return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
-  }
+console.log("WEBHOOK SECRET:", process.env.STRIPE_WEBHOOK_SECRET);
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-    console.log("Checkout session completed:", session.id);
-  }
-
-  return NextResponse.json({ received: true });
+try {
+  event = stripe.webhooks.constructEvent(
+    body,
+    sig,
+    process.env.STRIPE_WEBHOOK_SECRET!
+  );
+} catch (err: any) {
+  return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
 }
+
