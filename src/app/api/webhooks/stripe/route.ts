@@ -5,8 +5,15 @@ export const preferredRegion = "auto";
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+// SERVICE ROLE CLIENT (required for updating user rows)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(req: Request) {
   const body = await req.text(); // RAW BODY
@@ -34,6 +41,19 @@ export async function POST(req: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     console.log("Checkout session completed:", session.id);
+
+    //  GET USER EMAIL FROM CHECKOUT SESSION
+    const email = session.customer_details?.email;
+
+    if (email) {
+      //  UPDATE SUPABASE USER TO PREMIUM
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({ is_premium: true })
+        .eq("email", email);
+
+      console.log("Updated user:", email, { data, error });
+    }
   }
 
   return NextResponse.json({ received: true });
