@@ -1,11 +1,20 @@
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const preferredRegion = "auto";
+
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: Request) {
-  const body = await req.text();
-  const sig = req.headers.get("stripe-signature")!;
+  const body = await req.text(); // RAW BODY
+  const sig = headers().get("stripe-signature"); // RAW SIGNATURE
+
+  if (!sig) {
+    return new NextResponse("Missing Stripe signature", { status: 400 });
+  }
 
   let event;
 
@@ -21,8 +30,7 @@ export async function POST(req: Request) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-
-    // TODO: mark user as premium in Supabase
+    console.log("Checkout session completed:", session.id);
   }
 
   return NextResponse.json({ received: true });
