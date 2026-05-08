@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
     if (email) {
       const { data, error } = await supabase
-        .from("profiles")
+        .from("users")
         .update({ is_premium: true })
         .eq("email", email);
 
