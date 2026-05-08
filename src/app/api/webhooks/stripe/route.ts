@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
   let event;
 
-  // DEBUG LINE
+  // DEBUG: Is webhook secret loading?
   console.log("WEBHOOK SECRET:", process.env.STRIPE_WEBHOOK_SECRET);
 
   try {
@@ -42,17 +42,23 @@ export async function POST(req: Request) {
     const session = event.data.object;
     console.log("Checkout session completed:", session.id);
 
-    //  GET USER EMAIL FROM CHECKOUT SESSION
+    // ⭐ DEBUG: What email did Stripe send?
+    console.log("SESSION EMAIL:", session.customer_details?.email);
+
+    // ⭐ DEBUG: Are Supabase env vars loading?
+    console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+    console.log("SERVICE ROLE LOADED:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+
     const email = session.customer_details?.email;
 
     if (email) {
-      //  UPDATE SUPABASE USER TO PREMIUM
       const { data, error } = await supabase
         .from("profiles")
         .update({ is_premium: true })
         .eq("email", email);
 
-      console.log("Updated user:", email, { data, error });
+      // ⭐ DEBUG: Did the update succeed?
+      console.log("SUPABASE UPDATE RESULT:", { data, error });
     }
   }
 
