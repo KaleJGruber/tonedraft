@@ -22,7 +22,8 @@ export default function V1Page() {
   const [toneSample, setToneSample] = useState("");
   const [mode, setMode] = useState("email");
   const [freeUsed, setFreeUsed] = useState(0);
-  const [isPremium, setIsPremium] = useState<boolean | null>(null);
+  const [isPremium, setIsPremium] = useState(null);
+
 
 
 useEffect(() => {
