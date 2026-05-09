@@ -1,4 +1,11 @@
 "use client";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 
 import { useState, useEffect } from "react";
 import { FreeMessageCounter } from "../components/FreeMessageCounter";
@@ -15,6 +22,8 @@ export default function V1Page() {
   const [toneSample, setToneSample] = useState("");
   const [mode, setMode] = useState("email");
   const [freeUsed, setFreeUsed] = useState(0);
+  const [isPremium, setIsPremium] = useState<boolean | null>(null);
+
 
 useEffect(() => {
   const used = Number(localStorage.getItem("freeMessagesUsed") || 0);
@@ -32,9 +41,47 @@ useEffect(() => {
   }
 }, []);
 // Paywall logic
+if (isPremium === null) {
+  return <div>Loading…</div>;
+}
+
+if (isPremium) {
+  // Premium users skip the free message limit entirely
+  // Do NOT return the paywall
+} else {
+  // Non-premium users continue to free message logic
+}
+
+
 if (freeUsed >= 5) {
   return <Paywall />;
 }
+useEffect(() => {
+  const email = localStorage.getItem("userEmail");
+
+  if (!email) {
+    setIsPremium(false);
+    return;
+  }
+
+  async function checkPlan() {
+    const { data, error } = await supabase
+      .from("users")
+      .select("plan")
+      .eq("email", email)
+      .single();
+
+    if (error) {
+      console.log("Plan check error:", error);
+      setIsPremium(false);
+      return;
+    }
+
+    setIsPremium(data?.plan === "premium");
+  }
+
+  checkPlan();
+}, []);
 
 
 async function generate() {

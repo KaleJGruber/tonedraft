@@ -13,7 +13,7 @@ export async function POST() {
           quantity: 1,
         },
       ],
-      success_url: "https://tonedraft.vercel.app/success",
+      success_url: "https://tonedraft.vercel.app/success?email={CHECKOUT_SESSION:EMAIL}",
       cancel_url: "https://tonedraft.vercel.app/cancel",
     });
 

@@ -54,13 +54,16 @@ export async function POST(req: Request) {
     if (email) {
       const { data, error } = await supabase
         .from("users")
-        .update({ is_premium: true })
-        .eq("email", email);
-
-      // ⭐ DEBUG: Did the update succeed?
-      console.log("SUPABASE UPDATE RESULT:", { data, error });
+        .upsert({
+          email,
+          plan: "premium", // ⭐ use your existing plan column
+          stripeSubscriptionId: session.subscription,
+          stripeCustomerId: session.customer,
+        });
+    
+      console.log("SUPABASE UPSERT RESULT:", { data, error });
     }
-  }
+    
 
   return NextResponse.json({ received: true });
 }
