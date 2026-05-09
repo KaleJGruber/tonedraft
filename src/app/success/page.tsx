@@ -14,14 +14,13 @@ export default function SuccessPage() {
       localStorage.setItem("userEmail", email);
     }
 
-    // Redirect into the app
-    router.push("/");
+    router.push("/v1");
   }, []);
 
   return (
-    <div className="p-8 text-center">
-      <h1 className="text-2xl font-bold">Processing your upgrade…</h1>
-      <p className="text-gray-500 mt-2">Just a moment.</p>
+    <div style={{ padding: 40, textAlign: "center" }}>
+      <h1 style={{ fontSize: 24, fontWeight: 600 }}>Upgrading your account…</h1>
+      <p style={{ marginTop: 8, color: "#555" }}>Just a moment.</p>
     </div>
   );
 }
