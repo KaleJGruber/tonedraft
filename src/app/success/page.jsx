@@ -1,6 +1,7 @@
 "use client";
-
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
 
 import { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -16,7 +17,7 @@ export default function SuccessPage() {
       localStorage.setItem("userEmail", email);
     }
 
-    router.push("/v1");
+    router.replace("/v1");
   }, []);
 
   return (
