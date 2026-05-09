@@ -56,14 +56,15 @@ export async function POST(req: Request) {
         .from("users")
         .upsert({
           email,
-          plan: "premium", // ⭐ use your existing plan column
+          plan: "premium",
           stripeSubscriptionId: session.subscription,
           stripeCustomerId: session.customer,
         });
-    
+
       console.log("SUPABASE UPSERT RESULT:", { data, error });
     }
-    
+  } // <-- THIS ONE WAS MISSING
 
   return NextResponse.json({ received: true });
-}
+} // <-- AND THIS ONE CLOSES THE POST FUNCTION
+
