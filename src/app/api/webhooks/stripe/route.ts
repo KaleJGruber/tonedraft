@@ -5,15 +5,9 @@ export const preferredRegion = "auto";
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/utils/supabase/client";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
-// SERVICE ROLE CLIENT (required for updating user rows)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export async function POST(req: Request) {
   const body = await req.text(); // RAW BODY
@@ -63,8 +57,7 @@ export async function POST(req: Request) {
 
       console.log("SUPABASE UPSERT RESULT:", { data, error });
     }
-  } // <-- THIS ONE WAS MISSING
+  }
 
   return NextResponse.json({ received: true });
-} // <-- AND THIS ONE CLOSES THE POST FUNCTION
-
+}

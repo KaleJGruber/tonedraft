@@ -1,14 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/utils/supabase/client';
 
 export async function GET(
   req: Request,
   { params }: { params: { id: string } }
 ) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
   const { data, error } = await supabase
     .from('drafts')
     .select('*')
@@ -17,15 +12,11 @@ export async function GET(
 
   return Response.json({ data, error });
 }
+
 export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
 ) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
   const body = await req.json();
 
   const { data, error } = await supabase
