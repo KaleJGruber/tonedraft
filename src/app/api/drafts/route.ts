@@ -1,13 +1,13 @@
-import { supabase } from '@/utils/supabase/client';
+import { supabaseServer } from "@/utils/supabase/server";
 
 export async function POST(req: Request) {
   const body = await req.json();
 
-  const { data, error } = await supabase
-    .from('drafts')
+  const { data, error } = await supabaseServer
+    .from("drafts")
     .insert({
       title: body.title,
-      content: body.content
+      content: body.content,
     })
     .select();
 
@@ -15,10 +15,10 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
-  const { data, error } = await supabase
-    .from('drafts')
-    .select('*')
-    .order('created_at', { ascending: false });
+  const { data, error } = await supabaseServer
+    .from("drafts")
+    .select("*")
+    .order("created_at", { ascending: false });
 
   return Response.json({ data, error });
 }
