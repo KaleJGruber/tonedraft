@@ -1,3 +1,5 @@
+console.log("V1 PAGE RENDER START");
+
 "use client";
 
 
