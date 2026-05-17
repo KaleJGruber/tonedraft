@@ -1,7 +1,6 @@
-console.log("V1 PAGE RENDER START");
 
 "use client";
-
+console.log("V1 PAGE RENDER START");
 
 import { supabase } from '@/utils/supabase/client';
 
