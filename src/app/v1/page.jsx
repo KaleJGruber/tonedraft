@@ -40,21 +40,16 @@ useEffect(() => {
   }
 }, []);
 // Paywall logic
-if (isPremium === null) {
+// Unified loading gate
+if (isPremium === null || freeUsed === null) {
   return <div>Loading…</div>;
 }
 
-if (isPremium) {
-  // Premium users skip the free message limit entirely
-  // Do NOT return the paywall
-} else {
-  // Non-premium users continue to free message logic
-}
-
-
-if (freeUsed >= 5) {
+// Paywall check AFTER loading
+if (!isPremium && freeUsed >= 5) {
   return <Paywall />;
 }
+
 useEffect(() => {
   const email = localStorage.getItem("userEmail");
 
