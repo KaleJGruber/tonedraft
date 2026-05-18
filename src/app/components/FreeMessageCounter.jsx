@@ -1,3 +1,6 @@
+
+"use client";
+
 export function FreeMessageCounter({ used }) {
   const max = 5;
   const percent = (used / max) * 100;
