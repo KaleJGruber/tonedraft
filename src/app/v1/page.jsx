@@ -42,9 +42,10 @@ useEffect(() => {
 }, []);
 // Paywall logic
 // Unified loading gate
-if (isPremium === null || freeUsed === null) {
+if (isPremium === null) {
   return <div>Loading…</div>;
 }
+
 
 // Paywall check AFTER loading
 if (!isPremium && freeUsed >= 5) {
