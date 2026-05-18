@@ -1,6 +1,6 @@
 
 "use client";
-console.log("V1 PAGE RENDER START");
+
 
 import { supabase } from '@/utils/supabase/client';
 
@@ -9,7 +9,7 @@ import { supabase } from '@/utils/supabase/client';
 import { useState, useEffect } from "react";
 import { FreeMessageCounter } from "../components/FreeMessageCounter";
 import Paywall from "../components/Paywall";
-
+console.log("V1 PAGE RENDER START");
 export default function V1Page() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
