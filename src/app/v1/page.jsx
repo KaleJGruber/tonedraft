@@ -54,31 +54,39 @@ if (!isPremium && freeUsed >= 5) {
 }
 
 useEffect(() => {
-  const email = localStorage.getItem("userEmail");
+  const storedEmail = localStorage.getItem("userEmail");
 
-  if (!email) {
+  if (!storedEmail) {
+    // No email → user is not premium
     setIsPremium(false);
     return;
   }
 
   async function checkPlan() {
-    const { data, error } = await supabase
-      .from("users")
-      .select("plan")
-      .eq("email", email)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("plan")
+        .eq("email", storedEmail)
+        .single();
 
-    if (error) {
-      console.log("Plan check error:", error);
+      if (error) {
+        console.log("Plan check error:", error);
+        setIsPremium(false);
+        return;
+      }
+
+      setIsPremium(data?.plan === "premium");
+    } catch (err) {
+      console.log("Supabase error:", err);
       setIsPremium(false);
-      return;
     }
-
-    setIsPremium(data?.plan === "premium");
   }
 
   checkPlan();
 }, []);
+
+console.log("AFTER LOADING GATE", { isPremium, freeUsed });
 
 
 async function generate() {
