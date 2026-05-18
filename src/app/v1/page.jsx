@@ -45,6 +45,7 @@ useEffect(() => {
 if (isPremium === null) {
   return <div>Loading…</div>;
 }
+console.log("V1 AFTER LOADING GATE", { isPremium, freeUsed });
 
 
 // Paywall check AFTER loading
