@@ -1,16 +1,15 @@
 
 "use client";
 
-
-import { supabase } from '@/utils/supabase/client';
-
-
-
+import { supabase } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
 import { FreeMessageCounter } from "../components/FreeMessageCounter";
 import Paywall from "../components/Paywall";
+
 console.log("V1 PAGE RENDER START");
+
 export default function V1Page() {
+  // ---------------- STATE ----------------
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState("");
@@ -23,157 +22,69 @@ export default function V1Page() {
   const [freeUsed, setFreeUsed] = useState(0);
   const [isPremium, setIsPremium] = useState(null);
 
+  // ---------------- 1. LOAD EMAIL ----------------
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("userEmail");
+    if (storedEmail) setEmail(storedEmail);
+  }, []);
 
+  // ---------------- 2. LOAD FREE MESSAGE COUNTER ----------------
+  useEffect(() => {
+    const used = Number(localStorage.getItem("freeMessagesUsed") || 0);
+    const lastReset = localStorage.getItem("freeMessagesLastReset");
 
-useEffect(() => {
-  const used = Number(localStorage.getItem("freeMessagesUsed") || 0);
-  const lastReset = localStorage.getItem("freeMessagesLastReset");
+    const now = new Date();
+    const last = lastReset ? new Date(lastReset) : null;
 
-  const now = new Date();
-  const last = lastReset ? new Date(lastReset) : null;
+    if (!last || (now - last) / (1000 * 60 * 60 * 24) >= 30) {
+      localStorage.setItem("freeMessagesUsed", "0");
+      localStorage.setItem("freeMessagesLastReset", now.toISOString());
+      setFreeUsed(0);
+    } else {
+      setFreeUsed(used);
+    }
+  }, []);
 
-  if (!last || (now - last) / (1000 * 60 * 60 * 24) >= 30) {
-    localStorage.setItem("freeMessagesUsed", "0");
-    localStorage.setItem("freeMessagesLastReset", now.toISOString());
-    setFreeUsed(0);
-  } else {
-    setFreeUsed(used);
-  }
-}, []);
-// Paywall logic
-// Unified loading gate
-if (isPremium === null) {
-  return <div>Loading…</div>;
-}
-console.log("V1 AFTER LOADING GATE", { isPremium, freeUsed });
+  // ---------------- 3. CHECK PLAN AFTER EMAIL LOADS ----------------
+  useEffect(() => {
+    if (!email) return;
 
+    async function checkPlan() {
+      try {
+        const { data, error } = await supabase
+          .from("users")
+          .select("plan")
+          .eq("email", email)
+          .single();
 
-// Paywall check AFTER loading
-if (!isPremium && freeUsed >= 5) {
-  return <Paywall />;
-}
+        if (error) {
+          setIsPremium(false);
+          return;
+        }
 
-useEffect(() => {
-  const storedEmail = localStorage.getItem("userEmail");
-
-  if (!storedEmail) {
-    // No email → user is not premium
-    setIsPremium(false);
-    return;
-  }
-
-  async function checkPlan() {
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("plan")
-        .eq("email", storedEmail)
-        .single();
-
-      if (error) {
-        console.log("Plan check error:", error);
+        setIsPremium(data?.plan === "premium");
+      } catch {
         setIsPremium(false);
-        return;
       }
-
-      setIsPremium(data?.plan === "premium");
-    } catch (err) {
-      console.log("Supabase error:", err);
-      setIsPremium(false);
     }
+
+    checkPlan();
+  }, [email]);
+
+  // ---------------- 4. CORRECT LOADING GATE ----------------
+  if (!email || isPremium === null) {
+    return <div>Loading…</div>;
   }
 
-  checkPlan();
-}, []);
+  console.log("V1 AFTER LOADING GATE", { isPremium, freeUsed });
 
-console.log("AFTER LOADING GATE", { isPremium, freeUsed });
-
-
-async function generate() {
-  if (!email.trim()) return;
-
-  if (freeUsed >= 5) {
-    alert("You've used all 5 free messages. Please upgrade to continue.");
-    return;
+  // ---------------- 5. PAYWALL CHECK ----------------
+  if (!isPremium && freeUsed >= 5) {
+    return <Paywall />;
   }
 
-  const newUsed = freeUsed + 1;
-  localStorage.setItem("freeMessagesUsed", newUsed.toString());
-  setFreeUsed(newUsed);
+  // ---------------- REST OF YOUR COMPONENT CONTINUES BELOW ----------------
 
-  setLoading(true);
-  setError("");
-  setSummary("");
-  setAction("");
-  setReply("");
-
-  try {
-    const res = await fetch("/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email, // <-- FIXED
-        mode,
-        toneProfile: JSON.parse(localStorage.getItem("toneProfile") || "{}"),
-        toneSample: localStorage.getItem("toneSample") || "",
-        userId: null,
-      }),
-    });
-
-    if (!res.ok) throw new Error("Request failed");
-
-    const data = await res.json();
-    setSummary(data.summary || "");
-    setAction(data.action || "");
-    setReply(data.reply || "");
-  } catch (err) {
-    setError("Something went wrong. Try again.");
-  } finally {
-    setLoading(false);
-  }
-}
-
-
-  function copyReply() {
-    if (!reply) return;
-    navigator.clipboard.writeText(reply);
-  }
-
-  async function handleSaveToneProfile() {
-    if (!toneSample.trim()) return;
-
-    const res = await fetch("/api/extractTone", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sample: toneSample }),
-    });
-
-    const data = await res.json();
-
-    localStorage.setItem("toneProfile", JSON.stringify(data.toneProfile));
-localStorage.setItem("toneSample", toneSample);   
-setShowToneModal(false);
-setToneSample("");
-
-  }
-  async function openInEditor() {
-    if (!reply.trim()) return;
-  
-    const res = await fetch("/api/drafts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: "",
-        content: reply,
-      }),
-    });
-  
-    const data = await res.json();
-  
-    if (data?.data?.id) {
-      window.location.href = `/v1/editor/${data.data.id}`;
-    }
-  }
   
   return (
     <main
