@@ -47,7 +47,11 @@ export default function V1Page() {
 
   // ---------------- 3. CHECK PLAN AFTER EMAIL LOADS ----------------
   useEffect(() => {
-    if (!email) return;
+    if (!email) {
+      // No email → treat as free user
+      if (isPremium === null) setIsPremium(false);
+      return;
+    }
 
     const supabase = createBrowserClient();
 
@@ -71,7 +75,7 @@ export default function V1Page() {
     }
 
     checkPlan();
-  }, [email]);
+  }, [email, isPremium]);
 
   // ---------------- 4. CORRECT LOADING GATE ----------------
   if (email && isPremium === null) {
@@ -83,9 +87,59 @@ export default function V1Page() {
     return <Paywall />;
   }
 
+  // ---------------- FUNCTIONS (REQUIRED FOR BUILD) ----------------
+
+  async function generate() {
+    try {
+      setLoading(true);
+      setError("");
+
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          toneSample,
+          mode,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Something went wrong.");
+        return;
+      }
+
+      setSummary(data.summary || "");
+      setAction(data.action || "");
+      setReply(data.reply || "");
+
+      const used = Number(localStorage.getItem("freeMessagesUsed") || 0) + 1;
+      localStorage.setItem("freeMessagesUsed", used.toString());
+      setFreeUsed(used);
+    } catch {
+      setError("Failed to generate.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function copyReply() {
+    navigator.clipboard.writeText(reply);
+  }
+
+  function openInEditor() {
+    window.location.href = `/v1/editor?content=${encodeURIComponent(reply)}`;
+  }
+
+  function handleSaveToneProfile() {
+    localStorage.setItem("toneSample", toneSample);
+    setShowToneModal(false);
+  }
+
   // ---------------- NOW YOUR RETURN GOES HERE ----------------
 
-  
   return (
     <main
       style={{
