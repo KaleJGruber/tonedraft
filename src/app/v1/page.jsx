@@ -1,16 +1,14 @@
 
 "use client";
 
-import { createBrowserClient } from "@/utils/supabase/client";
 import { useState, useEffect } from "react";
+import { createBrowserClient } from "@/utils/supabase/client";
 import { FreeMessageCounter } from "../components/FreeMessageCounter";
 import Paywall from "../components/Paywall";
 
 console.log("V1 PAGE RENDER START");
 
 export default function V1Page() {
-  const supabase = createBrowserClient();   // ← FIXED
-
   // ---------------- STATE ----------------
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,6 +49,8 @@ export default function V1Page() {
   useEffect(() => {
     if (!email) return;
 
+    const supabase = createBrowserClient(); // ← SAFE: created inside effect
+
     async function checkPlan() {
       try {
         const { data, error } = await supabase
@@ -74,10 +74,9 @@ export default function V1Page() {
   }, [email]);
 
   // ---------------- 4. CORRECT LOADING GATE ----------------
-  if (isPremium === null) {
+  // 4. CORRECT LOADING GATE
+  if (email && isPremium === null) {
     return <div>Loading…</div>;
-  }
-
   console.log("V1 AFTER LOADING GATE", { isPremium, freeUsed });
 
   // ---------------- 5. PAYWALL CHECK ----------------
