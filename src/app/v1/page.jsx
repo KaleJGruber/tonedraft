@@ -49,7 +49,7 @@ export default function V1Page() {
   useEffect(() => {
     if (!email) return;
 
-    const supabase = createBrowserClient(); // ← SAFE: created inside effect
+    const supabase = createBrowserClient();
 
     async function checkPlan() {
       try {
@@ -74,17 +74,16 @@ export default function V1Page() {
   }, [email]);
 
   // ---------------- 4. CORRECT LOADING GATE ----------------
-  // 4. CORRECT LOADING GATE
   if (email && isPremium === null) {
     return <div>Loading…</div>;
-  console.log("V1 AFTER LOADING GATE", { isPremium, freeUsed });
+  }
 
   // ---------------- 5. PAYWALL CHECK ----------------
   if (!isPremium && freeUsed >= 5) {
     return <Paywall />;
   }
 
-  // ---------------- REST OF YOUR COMPONENT CONTINUES BELOW ----------------
+  // ---------------- NOW YOUR RETURN GOES HERE ----------------
 
   
   return (
