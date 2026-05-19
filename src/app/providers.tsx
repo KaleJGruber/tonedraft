@@ -1,9 +1,11 @@
 "use client";
 
-import { supabase } from "@/utils/supabase/client";
+import { createBrowserClient } from "@/utils/supabase/client";
 import { useEffect } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const supabase = createBrowserClient(); // ← FIXED
+
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -21,7 +23,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return () => {
       listener.subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase]);
 
   return <>{children}</>;
 }
