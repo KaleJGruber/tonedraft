@@ -72,9 +72,10 @@ export default function V1Page() {
   }, [email]);
 
   // ---------------- 4. CORRECT LOADING GATE ----------------
-  if (!email || isPremium === null) {
+  if (isPremium === null) {
     return <div>Loading…</div>;
   }
+  
 
   console.log("V1 AFTER LOADING GATE", { isPremium, freeUsed });
 
