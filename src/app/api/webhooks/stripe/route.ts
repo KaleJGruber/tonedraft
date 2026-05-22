@@ -5,13 +5,19 @@ export const preferredRegion = "auto";
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { supabaseServer } from "@/utils/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+// SERVICE ROLE CLIENT — REQUIRED FOR UPDATING USERS TABLE
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
 export async function POST(req: Request) {
-  const body = await req.text(); // RAW BODY
-  const sig = headers().get("stripe-signature"); // RAW SIGNATURE
+  const body = await req.text();
+  const sig = headers().get("stripe-signature");
 
   if (!sig) {
     return new NextResponse("Missing Stripe signature", { status: 400 });
@@ -35,7 +41,7 @@ export async function POST(req: Request) {
     const email = session.customer_details?.email;
 
     if (email) {
-      const { data, error } = await supabaseServer
+      const { data, error } = await supabase
         .from("users")
         .upsert({
           email,
