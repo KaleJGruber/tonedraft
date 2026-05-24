@@ -1,10 +1,21 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2023-10-16",
+});
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
+    const { email } = await req.json();
+
+    if (!email) {
+      return NextResponse.json(
+        { error: "Missing email" },
+        { status: 400 }
+      );
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [
@@ -13,8 +24,10 @@ export async function POST() {
           quantity: 1,
         },
       ],
-      success_url: "https://tonedraft.vercel.app/success?email={CHECKOUT_SESSION:EMAIL}",
-      cancel_url: "https://tonedraft.vercel.app/cancel",
+      customer_email: email,
+      client_reference_id: email, // ⭐ critical
+      success_url: `${process.env.NEXT_PUBLIC_URL}/success?email={CHECKOUT_SESSION:EMAIL}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_URL}/cancel`,
     });
 
     return NextResponse.json({ url: session.url });

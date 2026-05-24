@@ -9,12 +9,6 @@ import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-// SERVICE ROLE CLIENT — REQUIRED FOR UPDATING USERS TABLE
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(req: Request) {
   const body = await req.text();
   const sig = headers().get("stripe-signature");
@@ -36,11 +30,20 @@ export async function POST(req: Request) {
   }
 
   if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
+    const session = event.data.object as any;
 
     const email = session.customer_details?.email;
+    const ref = session.client_reference_id;
+
+    console.log("Webhook received:", { email, ref });
 
     if (email) {
+      // ⭐ CREATE SUPABASE CLIENT *INSIDE* THE HANDLER
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
       const { data, error } = await supabase
         .from("users")
         .upsert({
