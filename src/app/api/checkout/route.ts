@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2023-10-16",
+  apiVersion: "2023-10-16" as const,
 });
 
 export async function POST(req: Request) {
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
         },
       ],
       customer_email: email,
-      client_reference_id: email, // ⭐ critical
+      client_reference_id: email,
       success_url: `${process.env.NEXT_PUBLIC_URL}/success?email={CHECKOUT_SESSION:EMAIL}`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/cancel`,
     });
