@@ -27,7 +27,7 @@ export default function Paywall() {
 
       <button
   onClick={async () => {
-    const email = localStorage.getItem("td-email"); // or however you store it
+    const email = localStorage.getItem("td-email");
 
     if (!email) {
       alert("Missing email for redeem. Please enter your email first.");
@@ -56,8 +56,12 @@ export default function Paywall() {
     cursor: "pointer",
   }}
 >
-  Redeem Existing Purchase
+  Upgrade to Premium
 </button>
+
+{/* Divider */}
+<div style={{ height: 12 }} />
+
 
 
 
