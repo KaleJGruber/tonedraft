@@ -27,9 +27,14 @@ export default function Paywall() {
 
       <button
   onClick={async () => {
-    const email = localStorage.getItem("td-email");
+    const email = localStorage.getItem("td-email"); // or however you store it
 
-    const res = await fetch("/api/checkout", {
+    if (!email) {
+      alert("Missing email for redeem. Please enter your email first.");
+      return;
+    }
+
+    const res = await fetch("/api/redeem", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -40,9 +45,20 @@ export default function Paywall() {
     const { url } = await res.json();
     window.location.href = url;
   }}
+  style={{
+    width: "100%",
+    padding: "12px 18px",
+    borderRadius: 999,
+    border: "1px solid #ddd",
+    backgroundColor: "#f5f5f5",
+    color: "#333",
+    fontWeight: 600,
+    cursor: "pointer",
+  }}
 >
-  Upgrade to Premium
+  Redeem Existing Purchase
 </button>
+
 
 
 
