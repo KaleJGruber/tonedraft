@@ -7,7 +7,7 @@ export async function POST() {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      customer_creation: "always", // ⭐ REQUIRED so Stripe replaces EMAIL placeholder
+      customer_creation: "always",
 
       line_items: [
         {
@@ -16,7 +16,6 @@ export async function POST() {
         },
       ],
 
-      // Stripe will collect the email automatically
       success_url: `${process.env.NEXT_PUBLIC_URL}/success?email={CHECKOUT_SESSION:EMAIL}`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/cancel`,
     });
