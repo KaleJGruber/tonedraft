@@ -27,19 +27,12 @@ export default function Paywall() {
 
       <button
   onClick={async () => {
-    const email = localStorage.getItem("td-email");
-
-    if (!email) {
-      alert("Missing email. Please enter your email first.");
-      return;
-    }
-
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email: null }),
     });
 
     const { url } = await res.json();
@@ -58,6 +51,7 @@ export default function Paywall() {
 >
   Upgrade to Premium
 </button>
+
 
 <div style={{ height: 12 }} />
 
