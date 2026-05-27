@@ -3,27 +3,20 @@ import { NextResponse } from "next/server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
-    const { email } = await req.json();
-
-    if (!email) {
-      return NextResponse.json(
-        { error: "Missing email" },
-        { status: 400 }
-      );
-    }
-
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
+      customer_creation: "always", // ⭐ REQUIRED so Stripe replaces EMAIL placeholder
+
       line_items: [
         {
           price: process.env.STRIPE_PRICE_ID!,
           quantity: 1,
         },
       ],
-      customer_email: email,
-      client_reference_id: email,
+
+      // Stripe will collect the email automatically
       success_url: `${process.env.NEXT_PUBLIC_URL}/success?email={CHECKOUT_SESSION:EMAIL}`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/cancel`,
     });
