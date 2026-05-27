@@ -30,11 +30,11 @@ export default function Paywall() {
     const email = localStorage.getItem("td-email");
 
     if (!email) {
-      alert("Missing email for redeem. Please enter your email first.");
+      alert("Missing email. Please enter your email first.");
       return;
     }
 
-    const res = await fetch("/api/redeem", {
+    const res = await fetch("/api/checkout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -58,6 +58,9 @@ export default function Paywall() {
 >
   Upgrade to Premium
 </button>
+
+<div style={{ height: 12 }} />
+
 
 {/* Divider */}
 <div style={{ height: 12 }} />
