@@ -32,11 +32,17 @@ export default function Paywall() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email: null }),
+      body: JSON.stringify({}), // no email
     });
 
-    const { url } = await res.json();
-    window.location.href = url;
+    const data = await res.json();
+
+    if (!data.url) {
+      alert("Checkout failed. Please try again.");
+      return;
+    }
+
+    window.location.href = data.url;
   }}
   style={{
     width: "100%",
