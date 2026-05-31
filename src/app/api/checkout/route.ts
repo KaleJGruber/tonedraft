@@ -5,17 +5,21 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST() {
   try {
+    console.log("ENV CHECK", {
+      secret: !!process.env.STRIPE_SECRET_KEY,
+      price: process.env.STRIPE_PRICE_ID,
+      url: process.env.NEXT_PUBLIC_URL,
+    });
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer_creation: "always",
-
       line_items: [
         {
           price: process.env.STRIPE_PRICE_ID!,
           quantity: 1,
         },
       ],
-
       success_url: `${process.env.NEXT_PUBLIC_URL}/success?email={CHECKOUT_SESSION:EMAIL}`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/cancel`,
     });
@@ -26,3 +30,4 @@ export async function POST() {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+
