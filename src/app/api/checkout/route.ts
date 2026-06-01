@@ -1,16 +1,43 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-export async function POST() {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2023-10-16",
+});
+
+export async function POST(req: Request) {
   try {
-    console.log("ENV CHECK", {
-      secret: !!process.env.STRIPE_SECRET_KEY,
-      price: process.env.STRIPE_PRICE_ID,
-      url: process.env.NEXT_PUBLIC_URL,
-    });
+    // Create Supabase client using the user's cookies
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: req.headers.get("Authorization") || "",
+          },
+        },
+      }
+    );
 
+    // Get the logged-in user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
 
@@ -21,14 +48,21 @@ export async function POST() {
         },
       ],
 
-      success_url: `${process.env.NEXT_PUBLIC_URL}/success?email={CHECKOUT_SESSION:EMAIL}`,
+      // ⭐ REQUIRED FOR WEBHOOK TO WORK
+      customer_email: user.email!,
+      client_reference_id: user.id,
+
+      success_url: `${process.env.NEXT_PUBLIC_URL}/success`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/cancel`,
     });
 
     return NextResponse.json({ url: session.url });
   } catch (err: any) {
-    console.error("Stripe checkout error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error("CHECKOUT ERROR:", err);
+    return NextResponse.json(
+      { error: err.message },
+      { status: 500 }
+    );
   }
 }
 
