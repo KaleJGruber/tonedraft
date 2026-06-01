@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,14 +10,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST() {
   try {
-    // Create Supabase server client WITH COOKIES
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies,
-      }
-    );
+    // Create Supabase client using cookies
+    const supabase = createRouteHandlerClient({ cookies });
 
     // Get logged-in user
     const {
@@ -43,7 +37,7 @@ export async function POST() {
         },
       ],
 
-      // ⭐ REQUIRED FOR WEBHOOK
+      // ⭐ REQUIRED FOR WEBHOOK TO WORK
       customer_email: user.email!,
       client_reference_id: user.id,
 
@@ -54,6 +48,9 @@ export async function POST() {
     return NextResponse.json({ url: session.url });
   } catch (err: any) {
     console.error("CHECKOUT ERROR:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message },
+      { status: 500 }
+    );
   }
 }
