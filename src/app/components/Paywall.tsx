@@ -1,29 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Paywall() {
-  const [email, setEmail] = useState("");
-
-  // Load saved email on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("td-email");
-    if (saved) setEmail(saved);
-  }, []);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const startCheckout = async () => {
+    const email = inputRef.current?.value?.trim();
+
     if (!email) {
       alert("Please enter your email first.");
       return;
     }
 
-    // Always save before checkout
+    // Save email locally
     localStorage.setItem("td-email", email);
 
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email }), // ⭐ ALWAYS SENT
     });
 
     const data = await res.json();
@@ -63,15 +59,12 @@ export default function Paywall() {
 
       {/* Email Input */}
       <input
+        ref={inputRef}
         type="email"
         placeholder="Enter your email"
-        value={email}
-        onChange={(e) => {
-          setEmail(e.target.value);
-          localStorage.setItem("td-email", e.target.value);
-        }}
+        defaultValue={typeof window !== "undefined" ? localStorage.getItem("td-email") || "" : ""}
         onKeyDown={(e) => {
-          if (e.key === "Enter") startCheckout(); // ⭐ ENTER NOW WORKS
+          if (e.key === "Enter") startCheckout(); // ⭐ ENTER WORKS
         }}
         style={{
           width: "100%",
