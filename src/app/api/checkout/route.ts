@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,14 +10,27 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST() {
   try {
-    // Create Supabase client using cookies
-    const supabase = createRouteHandlerClient({ cookies });
+    // Create Supabase client using service role to read session
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
-    // Get logged-in user
+    // Read the user's access token from cookies
+    const accessToken = cookies().get("sb-access-token")?.value;
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    // Get the logged-in user
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = await supabase.auth.getUser(accessToken);
 
     if (userError || !user) {
       return NextResponse.json(
