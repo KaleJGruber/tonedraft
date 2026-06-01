@@ -1,29 +1,25 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-
-export async function POST(req: Request) {
+export async function POST() {
   try {
-    // Create Supabase client using the user's cookies
-    const supabase = createClient(
+    // Create Supabase server client WITH COOKIES
+    const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
-        global: {
-          headers: {
-            Authorization: req.headers.get("Authorization") || "",
-          },
-        },
+        cookies,
       }
     );
 
-    // Get the logged-in user
+    // Get logged-in user
     const {
       data: { user },
       error: userError,
@@ -47,7 +43,7 @@ export async function POST(req: Request) {
         },
       ],
 
-      // ⭐ REQUIRED FOR WEBHOOK TO WORK
+      // ⭐ REQUIRED FOR WEBHOOK
       customer_email: user.email!,
       client_reference_id: user.id,
 
@@ -58,11 +54,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: session.url });
   } catch (err: any) {
     console.error("CHECKOUT ERROR:", err);
-    return NextResponse.json(
-      { error: err.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
-
-
