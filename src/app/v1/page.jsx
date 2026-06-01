@@ -5,27 +5,26 @@ import { useState, useEffect } from "react";
 import { createBrowserClient } from "@/utils/supabase/client";
 import { FreeMessageCounter } from "../components/FreeMessageCounter";
 import Paywall from "../components/Paywall";
-
-console.log("V1 PAGE RENDER START");
+import Link from "next/link";
 
 export default function V1Page() {
-  // ---------------- STATE ----------------
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [summary, setSummary] = useState("");
-  const [action, setAction] = useState("");
-  const [reply, setReply] = useState("");
-  const [error, setError] = useState("");
-  const [showToneModal, setShowToneModal] = useState(false);
-  const [toneSample, setToneSample] = useState("");
-  const [mode, setMode] = useState("email");
-  const [freeUsed, setFreeUsed] = useState(0);
-  const [isPremium, setIsPremium] = useState(null);
+  const supabase = createBrowserClient();
 
-  // ---------------- 1. LOAD EMAIL ----------------
+  // ---------------- STATE ----------------
+  const [user, setUser] = useState(null);
+  const [isPremium, setIsPremium] = useState(false);
+  const [freeUsed, setFreeUsed] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [showToneModal, setShowToneModal] = useState(false);
+
+
+  // ---------------- 1. LOAD AUTH USER ----------------
   useEffect(() => {
-    const storedEmail = localStorage.getItem("userEmail");
-    if (storedEmail) setEmail(storedEmail);
+    async function loadUser() {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user || null);
+    }
+    loadUser();
   }, []);
 
   // ---------------- 2. LOAD FREE MESSAGE COUNTER ----------------
@@ -45,100 +44,27 @@ export default function V1Page() {
     }
   }, []);
 
-  // ---------------- 3. CHECK PLAN AFTER EMAIL LOADS ----------------
+  // ---------------- 3. CHECK PREMIUM PLAN ----------------
   useEffect(() => {
-    if (!email) {
-      // No email → treat as free user
-      if (isPremium === null) setIsPremium(false);
-      return;
-    }
-
-    const supabase = createBrowserClient();
-
     async function checkPlan() {
-      try {
-        const { data, error } = await supabase
-          .from("users")
-          .select("plan")
-          .eq("email", email)
-          .single();
-
-        if (error) {
-          setIsPremium(false);
-          return;
-        }
-
-        setIsPremium(data?.plan === "premium");
-      } catch {
+      if (!user) {
         setIsPremium(false);
-      }
-    }
-
-    checkPlan();
-  }, [email, isPremium]);
-
-  // ---------------- 4. CORRECT LOADING GATE ----------------
-  if (email && isPremium === null) {
-    return <div>Loading…</div>;
-  }
-
-  // ---------------- 5. PAYWALL CHECK ----------------
-  if (!isPremium && freeUsed >= 5) {
-    return <Paywall />;
-  }
-
-  // ---------------- FUNCTIONS (REQUIRED FOR BUILD) ----------------
-
-  async function generate() {
-    try {
-      setLoading(true);
-      setError("");
-
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          toneSample,
-          mode,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Something went wrong.");
+        setLoading(false);
         return;
       }
 
-      setSummary(data.summary || "");
-      setAction(data.action || "");
-      setReply(data.reply || "");
+      const { data, error } = await supabase
+        .from("users")
+        .select("plan")
+        .eq("id", user.id)
+        .single();
 
-      const used = Number(localStorage.getItem("freeMessagesUsed") || 0) + 1;
-      localStorage.setItem("freeMessagesUsed", used.toString());
-      setFreeUsed(used);
-    } catch {
-      setError("Failed to generate.");
-    } finally {
+      setIsPremium(data?.plan === "premium");
       setLoading(false);
     }
-  }
 
-  function copyReply() {
-    navigator.clipboard.writeText(reply);
-  }
-
-  function openInEditor() {
-    window.location.href = `/v1/editor?content=${encodeURIComponent(reply)}`;
-  }
-
-  function handleSaveToneProfile() {
-    localStorage.setItem("toneSample", toneSample);
-    setShowToneModal(false);
-  }
-
-  // ---------------- NOW YOUR RETURN GOES HERE ----------------
+    checkPlan();
+  }, [user]);
 
   return (
     <main
@@ -155,6 +81,63 @@ export default function V1Page() {
     alt="ToneDraft logo"
     style={{ height: 40 }}
   />
+  {/* AUTH BAR */}
+<div style={{ marginBottom: 20, display: "flex", gap: 12 }}>
+  {!user && (
+    <>
+      <Link href="/login">
+        <button
+          style={{
+            padding: "6px 12px",
+            borderRadius: 999,
+            border: "1px solid #ddd",
+            backgroundColor: "white",
+            cursor: "pointer",
+            fontWeight: 600,
+          }}
+        >
+          Log in
+        </button>
+      </Link>
+
+      <Link href="/signup">
+        <button
+          style={{
+            padding: "6px 12px",
+            borderRadius: 999,
+            border: "1px solid #ddd",
+            backgroundColor: "#f5f5f5",
+            cursor: "pointer",
+            fontWeight: 600,
+          }}
+        >
+          Sign up
+        </button>
+      </Link>
+    </>
+  )}
+
+  {user && (
+    <>
+      <span style={{ fontWeight: 600 }}>{user.email}</span>
+
+      <button
+        onClick={() => supabase.auth.signOut()}
+        style={{
+          padding: "6px 12px",
+          borderRadius: 999,
+          border: "1px solid #ddd",
+          backgroundColor: "white",
+          cursor: "pointer",
+          fontWeight: 600,
+        }}
+      >
+        Log out
+      </button>
+    </>
+  )}
+</div>
+
   <h1 style={{ fontSize: 30, fontWeight: 600, margin: 0 }}>ToneDraft - V1</h1>
 </div>
 
@@ -192,6 +175,25 @@ export default function V1Page() {
   </button>
 </div>
 
+{/* UPGRADE BUTTON */}
+{user && !isPremium && (
+  <div style={{ marginBottom: 16 }}>
+    <button
+      onClick={() => window.location.href = "/api/stripe/checkout"}
+      style={{
+        padding: "10px 16px",
+        borderRadius: 999,
+        border: "none",
+        backgroundColor: "#4f46e5",
+        color: "white",
+        cursor: "pointer",
+        fontWeight: 600,
+      }}
+    >
+      Upgrade to Premium
+    </button>
+  </div>
+)}
 
 
 
