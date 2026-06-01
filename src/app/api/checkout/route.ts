@@ -1,45 +1,22 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
-    // Create Supabase client using service role to read session
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const { email } = await req.json();
 
-    // Read the user's access token from cookies
-    const accessToken = cookies().get("sb-access-token")?.value;
-
-    if (!accessToken) {
+    if (!email) {
       return NextResponse.json(
-        { error: "Not authenticated" },
-        { status: 401 }
+        { error: "Missing email" },
+        { status: 400 }
       );
     }
 
-    // Get the logged-in user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser(accessToken);
-
-    if (userError || !user) {
-      return NextResponse.json(
-        { error: "Not authenticated" },
-        { status: 401 }
-      );
-    }
-
-    // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
 
@@ -50,9 +27,9 @@ export async function POST() {
         },
       ],
 
-      // ⭐ REQUIRED FOR WEBHOOK TO WORK
-      customer_email: user.email!,
-      client_reference_id: user.id,
+      // ⭐ REQUIRED FOR WEBHOOK
+      customer_email: email,
+      client_reference_id: email,
 
       success_url: `${process.env.NEXT_PUBLIC_URL}/success`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/cancel`,
