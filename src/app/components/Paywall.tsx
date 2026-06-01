@@ -1,6 +1,39 @@
 "use client";
 
+import { useState } from "react";
+
 export default function Paywall() {
+  const [email, setEmail] = useState(
+    typeof window !== "undefined" ? localStorage.getItem("td-email") || "" : ""
+  );
+
+  const handleUpgrade = async () => {
+    if (!email) {
+      alert("Please enter your email first.");
+      return;
+    }
+
+    // Save email locally so the user stays identified
+    localStorage.setItem("td-email", email);
+
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await res.json();
+
+    if (!data.url) {
+      alert("Checkout failed. Please try again.");
+      return;
+    }
+
+    window.location.href = data.url;
+  };
+
   return (
     <main
       style={{
@@ -12,63 +45,59 @@ export default function Paywall() {
       }}
     >
       <img
-          src="/tonedraft-logo.png"
-          alt="ToneDraft logo"
-          style={{ height: 100 }}
-        />
+        src="/tonedraft-logo.png"
+        alt="ToneDraft logo"
+        style={{ height: 100 }}
+      />
+
       <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 12 }}>
         Free Limit Reached
       </h1>
 
       <p style={{ color: "#555", marginBottom: 28, lineHeight: 1.5 }}>
-        You've used your 5 free messages this month.  
+        You've used your 5 free messages this month.
         Upgrade to continue generating drafts, summaries, and tone‑matched replies.
       </p>
 
+      {/* Email Input */}
+      <input
+        type="email"
+        placeholder="Enter your email"
+        value={email}
+        onChange={(e) => {
+          setEmail(e.target.value);
+          localStorage.setItem("td-email", e.target.value);
+        }}
+        style={{
+          width: "100%",
+          padding: "12px 18px",
+          borderRadius: 999,
+          border: "1px solid #ddd",
+          marginBottom: 12,
+          fontSize: 15,
+        }}
+      />
+
+      {/* Upgrade Button */}
       <button
-  onClick={async () => {
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}), // no email
-    });
+        onClick={handleUpgrade}
+        style={{
+          width: "100%",
+          padding: "12px 18px",
+          borderRadius: 999,
+          border: "1px solid #ddd",
+          backgroundColor: "#f5f5f5",
+          color: "#333",
+          fontWeight: 600,
+          cursor: "pointer",
+        }}
+      >
+        Upgrade to Premium
+      </button>
 
-    const data = await res.json();
+      <div style={{ height: 12 }} />
 
-    if (!data.url) {
-      alert("Checkout failed. Please try again.");
-      return;
-    }
-
-    window.location.href = data.url;
-  }}
-  style={{
-    width: "100%",
-    padding: "12px 18px",
-    borderRadius: 999,
-    border: "1px solid #ddd",
-    backgroundColor: "#f5f5f5",
-    color: "#333",
-    fontWeight: 600,
-    cursor: "pointer",
-  }}
->
-  Upgrade to Premium
-</button>
-
-
-<div style={{ height: 12 }} />
-
-
-{/* Divider */}
-<div style={{ height: 12 }} />
-
-
-
-
-
+      {/* Redeem Button */}
       <button
         onClick={async () => {
           const res = await fetch("/api/redeem", { method: "POST" });
