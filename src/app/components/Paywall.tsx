@@ -1,26 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Paywall() {
-  const [email, setEmail] = useState(
-    typeof window !== "undefined" ? localStorage.getItem("td-email") || "" : ""
-  );
+  const [email, setEmail] = useState("");
 
-  const handleUpgrade = async () => {
+  // Load saved email on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("td-email");
+    if (saved) setEmail(saved);
+  }, []);
+
+  const startCheckout = async () => {
     if (!email) {
       alert("Please enter your email first.");
       return;
     }
 
-    // Save email locally so the user stays identified
+    // Always save before checkout
     localStorage.setItem("td-email", email);
 
     const res = await fetch("/api/checkout", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
     });
 
@@ -68,6 +70,9 @@ export default function Paywall() {
           setEmail(e.target.value);
           localStorage.setItem("td-email", e.target.value);
         }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") startCheckout(); // ⭐ ENTER NOW WORKS
+        }}
         style={{
           width: "100%",
           padding: "12px 18px",
@@ -80,7 +85,7 @@ export default function Paywall() {
 
       {/* Upgrade Button */}
       <button
-        onClick={handleUpgrade}
+        onClick={startCheckout}
         style={{
           width: "100%",
           padding: "12px 18px",
