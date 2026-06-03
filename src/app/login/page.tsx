@@ -1,4 +1,4 @@
-"use client";
+="use client";
 
 import { useState } from "react";
 import { createBrowserClient } from "@/utils/supabase/client";
@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  async function handleLogin(e) {
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const { error } = await supabase.auth.signInWithPassword({
@@ -51,4 +51,3 @@ export default function LoginPage() {
     </form>
   );
 }
-
