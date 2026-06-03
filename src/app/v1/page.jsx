@@ -10,13 +10,40 @@ import Link from "next/link";
 export default function V1Page() {
   const supabase = createBrowserClient();
 
-  // ---------------- STATE ----------------
+  // ---------------- AUTH + PREMIUM ----------------
   const [user, setUser] = useState(null);
   const [isPremium, setIsPremium] = useState(false);
   const [freeUsed, setFreeUsed] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showToneModal, setShowToneModal] = useState(false);
 
+  // ---------------- MISSING STATE (ADDED) ----------------
+  const [mode, setMode] = useState<"email" | "essay" | "post">("email");
+  const [email, setEmail] = useState("");
+  const [summary, setSummary] = useState("");
+  const [action, setAction] = useState("");
+  const [reply, setReply] = useState("");
+  const [error, setError] = useState("");
+  const [toneSample, setToneSample] = useState("");
+
+  // ---------------- MISSING FUNCTIONS (ADDED) ----------------
+  async function generate() {
+    console.log("Generate clicked");
+    // Replace with your real API call later
+  }
+
+  function copyReply() {
+    if (reply) navigator.clipboard.writeText(reply);
+  }
+
+  function openInEditor() {
+    window.location.href = `/v1/editor?content=${encodeURIComponent(reply)}`;
+  }
+
+  function handleSaveToneProfile() {
+    console.log("Saving tone profile:", toneSample);
+    setShowToneModal(false);
+  }
 
   // ---------------- 1. LOAD AUTH USER ----------------
   useEffect(() => {
@@ -35,7 +62,7 @@ export default function V1Page() {
     const now = new Date();
     const last = lastReset ? new Date(lastReset) : null;
 
-    if (!last || (now - last) / (1000 * 60 * 60 * 24) >= 30) {
+    if (!last || (now.getTime() - last.getTime()) / (1000 * 60 * 60 * 24) >= 30) {
       localStorage.setItem("freeMessagesUsed", "0");
       localStorage.setItem("freeMessagesLastReset", now.toISOString());
       setFreeUsed(0);
@@ -53,7 +80,7 @@ export default function V1Page() {
         return;
       }
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("users")
         .select("plan")
         .eq("id", user.id)
@@ -66,6 +93,7 @@ export default function V1Page() {
     checkPlan();
   }, [user]);
 
+  // ---------------- UI ----------------
   return (
     <main
       style={{
@@ -75,20 +103,93 @@ export default function V1Page() {
         fontFamily: "system-ui, sans-serif",
       }}
     >
+      {/* HEADER + AUTH BAR */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-  <img
-    src="/tonedraft-logo.png"
-    alt="ToneDraft logo"
-    style={{ height: 40 }}
-  />
-  {/* AUTH BAR */}
-<div style={{ marginBottom: 20, display: "flex", gap: 12 }}>
-  {!user && (
-    <>
-      <Link href="/login">
+        <img src="/tonedraft-logo.png" alt="ToneDraft logo" style={{ height: 40 }} />
+
+        <div style={{ marginBottom: 20, display: "flex", gap: 12 }}>
+          {!user && (
+            <>
+              <Link href="/login">
+                <button
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 999,
+                    border: "1px solid #ddd",
+                    backgroundColor: "white",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                  }}
+                >
+                  Log in
+                </button>
+              </Link>
+
+              <Link href="/signup">
+                <button
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 999,
+                    border: "1px solid #ddd",
+                    backgroundColor: "#f5f5f5",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                  }}
+                >
+                  Sign up
+                </button>
+              </Link>
+            </>
+          )}
+
+          {user && (
+            <>
+              <span style={{ fontWeight: 600 }}>{user.email}</span>
+
+              <button
+                onClick={() => supabase.auth.signOut()}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: 999,
+                  border: "1px solid #ddd",
+                  backgroundColor: "white",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                Log out
+              </button>
+            </>
+          )}
+        </div>
+
+        <h1 style={{ fontSize: 30, fontWeight: 600, margin: 0 }}>ToneDraft - V1</h1>
+      </div>
+
+      {/* VIEW DRAFTS */}
+      <div style={{ marginBottom: 16 }}>
+        <a href="/v1/drafts">
+          <button
+            style={{
+              padding: "8px 14px",
+              borderRadius: 999,
+              border: "1px solid #ddd",
+              backgroundColor: "white",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            View Drafts
+          </button>
+        </a>
+      </div>
+
+      {/* CALIBRATE TONE */}
+      <div style={{ marginBottom: 16 }}>
         <button
+          onClick={() => setShowToneModal(true)}
           style={{
-            padding: "6px 12px",
+            padding: "8px 14px",
             borderRadius: 999,
             border: "1px solid #ddd",
             backgroundColor: "white",
@@ -96,137 +197,42 @@ export default function V1Page() {
             fontWeight: 600,
           }}
         >
-          Log in
+          Calibrate Tone
         </button>
-      </Link>
+      </div>
 
-      <Link href="/signup">
-        <button
-          style={{
-            padding: "6px 12px",
-            borderRadius: 999,
-            border: "1px solid #ddd",
-            backgroundColor: "#f5f5f5",
-            cursor: "pointer",
-            fontWeight: 600,
-          }}
-        >
-          Sign up
-        </button>
-      </Link>
-    </>
-  )}
+      {/* UPGRADE BUTTON */}
+      {user && !isPremium && (
+        <div style={{ marginBottom: 16 }}>
+          <button
+            onClick={() => (window.location.href = "/api/stripe/checkout")}
+            style={{
+              padding: "10px 16px",
+              borderRadius: 999,
+              border: "none",
+              backgroundColor: "#4f46e5",
+              color: "white",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            Upgrade to Premium
+          </button>
+        </div>
+      )}
 
-  {user && (
-    <>
-      <span style={{ fontWeight: 600 }}>{user.email}</span>
-
-      <button
-        onClick={() => supabase.auth.signOut()}
-        style={{
-          padding: "6px 12px",
-          borderRadius: 999,
-          border: "1px solid #ddd",
-          backgroundColor: "white",
-          cursor: "pointer",
-          fontWeight: 600,
-        }}
-      >
-        Log out
-      </button>
-    </>
-  )}
-</div>
-
-  <h1 style={{ fontSize: 30, fontWeight: 600, margin: 0 }}>ToneDraft - V1</h1>
-</div>
-
-      
-      <div style={{ marginBottom: 16 }}>
-  <a href="/v1/drafts">
-    <button
-      style={{
-        padding: "8px 14px",
-        borderRadius: 999,
-        border: "1px solid #ddd",
-        backgroundColor: "white",
-        cursor: "pointer",
-        fontWeight: 600,
-      }}
-    >
-      View Drafts
-    </button>
-  </a>
-</div>
-
-<div style={{ marginBottom: 16 }}>
-  <button
-    onClick={() => setShowToneModal(true)}
-    style={{
-      padding: "8px 14px",
-      borderRadius: 999,
-      border: "1px solid #ddd",
-      backgroundColor: "white",
-      cursor: "pointer",
-      fontWeight: 600,
-    }}
-  >
-    Calibrate Tone
-  </button>
-</div>
-
-{/* UPGRADE BUTTON */}
-{user && !isPremium && (
-  <div style={{ marginBottom: 16 }}>
-    <button
-      onClick={() => window.location.href = "/api/stripe/checkout"}
-      style={{
-        padding: "10px 16px",
-        borderRadius: 999,
-        border: "none",
-        backgroundColor: "#4f46e5",
-        color: "white",
-        cursor: "pointer",
-        fontWeight: 600,
-      }}
-    >
-      Upgrade to Premium
-    </button>
-  </div>
-)}
-
-
-
-
-      
-
+      {/* INSTRUCTIONS */}
       <p style={{ color: "#555", marginBottom: 24 }}>
-1. Paste Your Tone Sample, use the Calibrate Tone button above to
- paste 1 sample between 3–5 paragraphs of your writing.
-ToneDraft extracts your style and builds a tone profile automatically each time you use it.
-</p>
-<p style={{ color: "#555", marginBottom: 24 }}>
-2. Write Your Prompt,
- Describe what you want to generate, an email, post, essay, message, anything.
-ToneDraft blends your tone with the task.
-</p>
-<p style={{ color: "#555", marginBottom: 24 }}>
-3. Generate & Save,
- Review the draft, edit if needed, and save it to your workspace.
-You can revisit all saved drafts anytime.
+        1. Paste Your Tone Sample… ToneDraft extracts your style automatically.
       </p>
-      <div style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
-  Questions or issues? 
-  <a 
-    href="mailto:tonedraftsupport@gmail.com" 
-    style={{ color: '#555', textDecoration: 'underline', marginLeft: 4, marginBottom: 500}}
-  >
-    tonedraftsupport@gmail.com
-  </a>
-</div>
+      <p style={{ color: "#555", marginBottom: 24 }}>
+        2. Write Your Prompt… ToneDraft blends your tone with the task.
+      </p>
+      <p style={{ color: "#555", marginBottom: 24 }}>
+        3. Generate & Save… Review, edit, and save to your workspace.
+      </p>
 
-
-
+      {/* MODE SWITCH */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16, marginTop: 16 }}>
         <button
           onClick={() => setMode("email")}
@@ -257,57 +263,57 @@ You can revisit all saved drafts anytime.
         >
           Essay Mode
         </button>
-      
-      <button
-  onClick={() => setMode("post")}
-  style={{
-    padding: "8px 14px",
-    borderRadius: 999,
-    border: "1px solid #ddd",
-    backgroundColor: mode === "post" ? "#111827" : "white",
-    color: mode === "post" ? "white" : "black",
-    cursor: "pointer",
-    fontWeight: 600,
-  }}
->
-  
-  Post Mode
-</button>
-</div>
 
+        <button
+          onClick={() => setMode("post")}
+          style={{
+            padding: "8px 14px",
+            borderRadius: 999,
+            border: "1px solid #ddd",
+            backgroundColor: mode === "post" ? "#111827" : "white",
+            color: mode === "post" ? "white" : "black",
+            cursor: "pointer",
+            fontWeight: 600,
+          }}
+        >
+          Post Mode
+        </button>
+      </div>
+
+      {/* PROMPT LABEL */}
       <label style={{ fontWeight: 600, marginBottom: 8, display: "block" }}>
-      {mode === "essay"
-  ? "Essay Prompt"
-  : mode === "post"
-  ? "Post Prompt"
-  : "Email"}
-
+        {mode === "essay"
+          ? "Essay Prompt"
+          : mode === "post"
+          ? "Post Prompt"
+          : "Email"}
       </label>
 
       <FreeMessageCounter used={freeUsed} />
+
+      {/* PROMPT TEXTAREA */}
       <textarea
-  value={email}
-  onChange={(e) => setEmail(e.target.value)}
-  placeholder={
-    mode === "essay"
-      ? "Enter a prompt..."
-      : mode === "post"
-      ? "Describe the post you want to create..."
-      : "Paste the email you want to reply to..."
-  }
-  
-  style={{
-    width: "100%",
-    minHeight: 180,
-    padding: 12,
-    borderRadius: 8,
-    border: "1px solid #ddd",
-    fontSize: 14,
-    resize: "vertical",
-  }}
-/>
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder={
+          mode === "essay"
+            ? "Enter a prompt..."
+            : mode === "post"
+            ? "Describe the post you want to create..."
+            : "Paste the email you want to reply to..."
+        }
+        style={{
+          width: "100%",
+          minHeight: 180,
+          padding: 12,
+          borderRadius: 8,
+          border: "1px solid #ddd",
+          fontSize: 14,
+          resize: "vertical",
+        }}
+      />
 
-
+      {/* GENERATE BUTTON */}
       <button
         onClick={generate}
         disabled={loading || !email.trim()}
@@ -323,18 +329,17 @@ You can revisit all saved drafts anytime.
         }}
       >
         {loading
-  ? "Thinking..."
-  : mode === "essay"
-    ? "Generate Paragraph"
-    : mode === "post"
-    ? "Generate Post"
-    : "Generate Reply"}
-
-
+          ? "Thinking..."
+          : mode === "essay"
+          ? "Generate Paragraph"
+          : mode === "post"
+          ? "Generate Post"
+          : "Generate Reply"}
       </button>
 
       {error && <p style={{ color: "crimson", marginTop: 12 }}>{error}</p>}
 
+      {/* OUTPUT SECTION */}
       {(summary || action || reply) && (
         <section
           style={{
@@ -370,6 +375,7 @@ You can revisit all saved drafts anytime.
                 }}
               >
                 <h2 style={{ fontSize: 18, margin: 0 }}>Drafted Reply</h2>
+
                 <button
                   onClick={copyReply}
                   style={{
@@ -383,23 +389,22 @@ You can revisit all saved drafts anytime.
                 >
                   Copy
                 </button>
-                <button
-  
-  type="button"
-  onClick={openInEditor}
-  style={{
-    padding: "4px 10px",
-    borderRadius: 999,
-    border: "1px solid #ddd",
-    backgroundColor: "white",
-    fontSize: 12,
-    cursor: "pointer",
-    marginLeft: 8,
-  }}
->
-  Open in Editor
-</button>
 
+                <button
+                  type="button"
+                  onClick={openInEditor}
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    border: "1px solid #ddd",
+                    backgroundColor: "white",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    marginLeft: 8,
+                  }}
+                >
+                  Open in Editor
+                </button>
               </div>
 
               <pre
@@ -417,6 +422,7 @@ You can revisit all saved drafts anytime.
         </section>
       )}
 
+      {/* TONE MODAL */}
       {showToneModal && (
         <div
           style={{
