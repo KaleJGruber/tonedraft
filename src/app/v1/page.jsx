@@ -1,10 +1,8 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { createBrowserClient } from "@/utils/supabase/client";
 import { FreeMessageCounter } from "../components/FreeMessageCounter";
-import Paywall from "../components/Paywall";
 import Link from "next/link";
 
 export default function V1Page() {
@@ -14,10 +12,10 @@ export default function V1Page() {
   const [user, setUser] = useState(null);
   const [isPremium, setIsPremium] = useState(false);
   const [freeUsed, setFreeUsed] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showToneModal, setShowToneModal] = useState(false);
 
-  // ---------------- MISSING STATE (ADDED) ----------------
+  // ---------------- MAIN STATE ----------------
   const [mode, setMode] = useState<"email" | "essay" | "post">("email");
   const [email, setEmail] = useState("");
   const [summary, setSummary] = useState("");
@@ -26,7 +24,7 @@ export default function V1Page() {
   const [error, setError] = useState("");
   const [toneSample, setToneSample] = useState("");
 
-  // ---------------- MISSING FUNCTIONS (ADDED) ----------------
+  // ---------------- FUNCTIONS ----------------
   async function generate() {
     console.log("Generate clicked");
     // Replace with your real API call later
@@ -45,7 +43,7 @@ export default function V1Page() {
     setShowToneModal(false);
   }
 
-  // ---------------- 1. LOAD AUTH USER ----------------
+  // ---------------- LOAD AUTH USER ----------------
   useEffect(() => {
     async function loadUser() {
       const { data } = await supabase.auth.getUser();
@@ -54,7 +52,7 @@ export default function V1Page() {
     loadUser();
   }, []);
 
-  // ---------------- 2. LOAD FREE MESSAGE COUNTER ----------------
+  // ---------------- FREE MESSAGE COUNTER ----------------
   useEffect(() => {
     const used = Number(localStorage.getItem("freeMessagesUsed") || 0);
     const lastReset = localStorage.getItem("freeMessagesLastReset");
@@ -71,12 +69,11 @@ export default function V1Page() {
     }
   }, []);
 
-  // ---------------- 3. CHECK PREMIUM PLAN ----------------
+  // ---------------- CHECK PREMIUM PLAN ----------------
   useEffect(() => {
     async function checkPlan() {
       if (!user) {
         setIsPremium(false);
-        setLoading(false);
         return;
       }
 
@@ -87,7 +84,6 @@ export default function V1Page() {
         .single();
 
       setIsPremium(data?.plan === "premium");
-      setLoading(false);
     }
 
     checkPlan();
