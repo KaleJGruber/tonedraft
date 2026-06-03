@@ -12,7 +12,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  async function handleSignup(e) {
+  async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const { error } = await supabase.auth.signUp({
