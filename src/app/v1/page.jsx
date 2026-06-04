@@ -27,7 +27,7 @@ export default function V1Page() {
   // ---------------- FUNCTIONS ----------------
   async function generate() {
     console.log("Generate clicked");
-    // Replace with your real API call later
+    // TODO: Replace with your real API call
   }
 
   function copyReply() {
