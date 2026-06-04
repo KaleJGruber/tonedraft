@@ -16,7 +16,7 @@ export default function V1Page() {
   const [showToneModal, setShowToneModal] = useState(false);
 
   // ---------------- MAIN STATE ----------------
-  const [mode, setMode] = useState<"email" | "essay" | "post">("email");
+  const [mode, setMode] = useState("email");
   const [email, setEmail] = useState("");
   const [summary, setSummary] = useState("");
   const [action, setAction] = useState("");
