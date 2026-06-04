@@ -101,7 +101,8 @@ export default function V1Page() {
     >
       {/* HEADER + AUTH BAR */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-       
+      <img src="/tonedraft-logo.png" alt="ToneDraft logo" style={{ height: 40 }} />
+        <h1 style={{ fontSize: 30, fontWeight: 600, margin: 0 }}>ToneDraft - V1</h1>
 
         <div style={{ marginBottom: 20, display: "flex", gap: 12 }}>
           {!user && (
@@ -158,8 +159,7 @@ export default function V1Page() {
             </>
           )}
         </div>
-        <img src="/tonedraft-logo.png" alt="ToneDraft logo" style={{ height: 40 }} />
-        <h1 style={{ fontSize: 30, fontWeight: 600, margin: 0 }}>ToneDraft - V1</h1>
+        
       </div>
 
       {/* VIEW DRAFTS */}
