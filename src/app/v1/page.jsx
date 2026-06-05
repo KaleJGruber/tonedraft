@@ -104,7 +104,7 @@ export default function V1Page() {
       <img src="/tonedraft-logo.png" alt="ToneDraft logo" style={{ height: 40 }} />
         <h1 style={{ fontSize: 30, fontWeight: 600, margin: 0 }}>ToneDraft - V1</h1>
 
-        <div style={{ marginBottom: 20, display: "flex", gap: 12 }}>
+        <div style={{ marginBottom: 20, display: "flex", gap: 30 }}>
           {!user && (
             <>
               <Link href="/login">
