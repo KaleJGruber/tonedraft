@@ -128,7 +128,7 @@ export default function V1Page() {
                     padding: "6px 12px",
                     borderRadius: 999,
                     border: "1px solid #ddd",
-                    backgroundColor: "#f5f5f5",
+                    backgroundColor: "white",
                     cursor: "pointer",
                     fontWeight: 600,
                   }}
