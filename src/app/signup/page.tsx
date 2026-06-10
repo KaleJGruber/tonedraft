@@ -13,7 +13,7 @@ export default function SignupPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [infoMsg, setInfoMsg] = useState("");
 
-  async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSignup(e) {
     e.preventDefault();
     setErrorMsg("");
     setInfoMsg("");

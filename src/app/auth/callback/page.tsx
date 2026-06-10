@@ -10,8 +10,7 @@ export default function AuthCallbackPage() {
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    async function handleCallback() {
-      // Just touching the session is enough to finalize the email confirmation
+    async function finish() {
       const { data, error } = await supabase.auth.getSession();
 
       if (error) {
@@ -20,18 +19,16 @@ export default function AuthCallbackPage() {
       }
 
       if (data.session) {
-        router.push("/premium"); // or "/" if you prefer
+        router.push("/premium");
       } else {
         setErrorMsg("No active session. Try logging in.");
       }
     }
 
-    handleCallback();
-  }, [router, supabase]);
+    finish();
+  }, []);
 
-  if (errorMsg) {
-    return <p style={{ color: "red" }}>{errorMsg}</p>;
-  }
+  if (errorMsg) return <p style={{ color: "red" }}>{errorMsg}</p>;
 
   return <p>Confirming your account...</p>;
 }

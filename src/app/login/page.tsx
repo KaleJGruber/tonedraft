@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
+  async function handleLogin(e) {
     e.preventDefault();
     setErrorMsg("");
 
@@ -26,7 +26,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/premium"); // or wherever your main app is
+    router.push("/premium");
   }
 
   return (
