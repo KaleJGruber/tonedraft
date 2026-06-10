@@ -1,19 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 
 export default function SignupPage() {
   const supabase = createSupabaseBrowserClient();
-  const router = useRouter();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
-  const [infoMsg, setInfoMsg] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [errorMsg, setErrorMsg] = useState<string>("");
+  const [infoMsg, setInfoMsg] = useState<string>("");
 
-  async function handleSignup(e) {
+  async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrorMsg("");
     setInfoMsg("");
@@ -43,7 +41,7 @@ export default function SignupPage() {
 
       <input
         value={email}
-        onChange={e => setEmail(e.target.value)}
+        onChange={(e) => setEmail(e.target.value)}
         placeholder="Email"
         type="email"
         required
@@ -52,7 +50,7 @@ export default function SignupPage() {
       <input
         type="password"
         value={password}
-        onChange={e => setPassword(e.target.value)}
+        onChange={(e) => setPassword(e.target.value)}
         placeholder="Password"
         required
       />
