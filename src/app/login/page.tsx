@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { createBrowserClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 
 export default function LoginPage() {
-  const supabase = createBrowserClient();
+  const supabase = createSupabaseBrowserClient();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -14,6 +14,7 @@ export default function LoginPage() {
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setErrorMsg("");
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -25,7 +26,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/premium");
+    router.push("/premium"); // or wherever your main app is
   }
 
   return (
@@ -38,6 +39,8 @@ export default function LoginPage() {
         value={email}
         onChange={e => setEmail(e.target.value)}
         placeholder="Email"
+        type="email"
+        required
       />
 
       <input
@@ -45,6 +48,7 @@ export default function LoginPage() {
         value={password}
         onChange={e => setPassword(e.target.value)}
         placeholder="Password"
+        required
       />
 
       <button type="submit">Log In</button>
