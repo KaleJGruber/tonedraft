@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { createBrowserClient } from "@/utils/supabase/client";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    const supabase = createBrowserClient(); // ← moved INSIDE the effect
+    const supabase = createSupabaseBrowserClient();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
