@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createBrowserClient } from "@/utils/supabase/client";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { FreeMessageCounter } from "../components/FreeMessageCounter";
 import Link from "next/link";
 
 export default function V1Page() {
-  const supabase = createBrowserClient();
+  const supabase = createSupabaseBrowserClient();
 
   // ---------------- AUTH + PREMIUM ----------------
   const [user, setUser] = useState(null);
