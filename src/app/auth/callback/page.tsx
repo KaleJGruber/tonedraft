@@ -1,34 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
-  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     async function finish() {
-      const { data, error } = await supabase.auth.getSession();
+      // Exchange the code in the URL for a real session
+      const { error } = await supabase.auth.exchangeCodeForSession(
+        window.location.href
+      );
 
-      if (error) {
-        setErrorMsg(error.message);
-        return;
-      }
-
-      if (data.session) {
+      // If successful, redirect the user into your app
+      if (!error) {
         router.push("/premium");
       } else {
-        setErrorMsg("No active session. Try logging in.");
+        console.error("Auth callback error:", error);
       }
     }
 
     finish();
   }, []);
-
-  if (errorMsg) return <p style={{ color: "red" }}>{errorMsg}</p>;
 
   return <p>Confirming your account...</p>;
 }
