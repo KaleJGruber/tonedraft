@@ -52,6 +52,23 @@ export default function V1Page() {
     loadUser();
   }, []);
 
+  // ---------------- FREE MESSAGE COUNTER ----------------
+  useEffect(() => {
+    const used = Number(localStorage.getItem("freeMessagesUsed") || 0);
+    const lastReset = localStorage.getItem("freeMessagesLastReset");
+
+    const now = new Date();
+    const last = lastReset ? new Date(lastReset) : null;
+
+    if (!last || (now.getTime() - last.getTime()) / (1000 * 60 * 60 * 24) >= 30) {
+      localStorage.setItem("freeMessagesUsed", "0");
+      localStorage.setItem("freeMessagesLastReset", now.toISOString());
+      setFreeUsed(0);
+    } else {
+      setFreeUsed(used);
+    }
+  }, []);
+
   // ---------------- CHECK PREMIUM PLAN ----------------
   useEffect(() => {
     async function checkPlan() {
@@ -83,35 +100,42 @@ export default function V1Page() {
       }}
     >
       {/* HEADER + AUTH BAR */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          marginBottom: 20,
-        }}
-      >
-        <img
-          src="/tonedraft-logo.png"
-          alt="ToneDraft logo"
-          style={{ height: 40 }}
-        />
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+      <img src="/tonedraft-logo.png" alt="ToneDraft logo" style={{ height: 40 }} />
+        <h1 style={{ fontSize: 30, fontWeight: 600, margin: 0 }}>ToneDraft - V1</h1>
 
-        <h1 style={{ fontSize: 30, fontWeight: 600, margin: 0 }}>
-          ToneDraft - V1
-        </h1>
-
-        <div
-          style={{
-            marginLeft: "auto",
-            marginBottom: 10,
-            display: "flex",
-            gap: 20,
-          }}
-        >
+        <div style={{ marginLeft: "auto", marginBottom: 10, display: "flex", gap: 20 }}>
           {!user && (
             <>
-              {/* empty for now */}
+              <Link href="/login">
+                <button
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 999,
+                    border: "1px solid #ddd",
+                    backgroundColor: "white",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                  }}
+                >
+                  Log in
+                </button>
+              </Link>
+
+              <Link href="/signup">
+                <button
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 999,
+                    border: "1px solid #ddd",
+                    backgroundColor: "white",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                  }}
+                >
+                  Sign up
+                </button>
+              </Link>
             </>
           )}
 
@@ -135,6 +159,7 @@ export default function V1Page() {
             </>
           )}
         </div>
+        
       </div>
 
       {/* VIEW DRAFTS */}
@@ -154,10 +179,6 @@ export default function V1Page() {
           </button>
         </a>
       </div>
-    </main>
-  );
-}
-
 
       {/* CALIBRATE TONE */}
       <div style={{ marginBottom: 16 }}>
@@ -176,16 +197,36 @@ export default function V1Page() {
         </button>
       </div>
 
-      
+      {/* UPGRADE BUTTON */}
+      {user && !isPremium && (
+        <div style={{ marginBottom: 16 }}>
+          <button
+            onClick={() => (window.location.href = "/api/stripe/checkout")}
+            style={{
+              padding: "10px 16px",
+              borderRadius: 999,
+              border: "none",
+              backgroundColor: "#4f46e5",
+              color: "white",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            Upgrade to Premium
+          </button>
+        </div>
+      )}
 
       {/* INSTRUCTIONS */}
-      <><p style={{ color: "#555", marginBottom: 24 }}>
-  1. Paste Your Tone Sample… ToneDraft extracts your style automatically.
-</p><p style={{ color: "#555", marginBottom: 24 }}>
-    2. Write Your Prompt… ToneDraft blends your tone with the task.
-  </p><p style={{ color: "#555", marginBottom: 24 }}>
-    3. Generate & Save… Review, edit, and save to your workspace.
-  </p></>
+      <p style={{ color: "#555", marginBottom: 24 }}>
+        1. Paste Your Tone Sample… ToneDraft extracts your style automatically.
+      </p>
+      <p style={{ color: "#555", marginBottom: 24 }}>
+        2. Write Your Prompt… ToneDraft blends your tone with the task.
+      </p>
+      <p style={{ color: "#555", marginBottom: 24 }}>
+        3. Generate & Save… Review, edit, and save to your workspace.
+      </p>
 
       {/* MODE SWITCH */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16, marginTop: 16 }}>
@@ -236,13 +277,15 @@ export default function V1Page() {
       </div>
 
       {/* PROMPT LABEL */}
-      <><label style={{ fontWeight: 600, marginBottom: 8, display: "block" }}>
-  {mode === "essay"
-    ? "Essay Prompt"
-    : mode === "post"
-      ? "Post Prompt"
-      : "Email"}
-</label><FreeMessageCounter used={freeUsed} /></>
+      <label style={{ fontWeight: 600, marginBottom: 8, display: "block" }}>
+        {mode === "essay"
+          ? "Essay Prompt"
+          : mode === "post"
+          ? "Post Prompt"
+          : "Email"}
+      </label>
+
+      <FreeMessageCounter used={freeUsed} />
 
       {/* PROMPT TEXTAREA */}
       <textarea
@@ -436,23 +479,23 @@ export default function V1Page() {
               </button>
 
               <button
-  onClick={handleSaveToneProfile}
-  style={{
-    padding: "8px 14px",
-    borderRadius: 999,
-    border: "none",
-    backgroundColor: "#111827",
-    color: "white",
-    cursor: "pointer",
-    fontWeight: 600,
-  }}
->
-  Save Tone Profile
-</button>
-</div>
-</div>
-</div>
-)}
-</main>
-);
+                onClick={handleSaveToneProfile}
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: 999,
+                  border: "none",
+                  backgroundColor: "#111827",
+                  color: "white",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                Save Tone Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
 }
