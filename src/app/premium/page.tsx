@@ -436,23 +436,23 @@ export default function V1Page() {
               </button>
 
               <button
-                onClick={handleSaveToneProfile}
-                style={{
-                  padding: "8px 14px",
-                  borderRadius: 999,
-                  border: "none",
-                  backgroundColor: "#111827",
-                  color: "white",
-                  cursor: "pointer",
-                  fontWeight: 600,
-                }}
-              >
-                Save Tone Profile
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </main>
-  );
+  onClick={handleSaveToneProfile}
+  style={{
+    padding: "8px 14px",
+    borderRadius: 999,
+    border: "none",
+    backgroundColor: "#111827",
+    color: "white",
+    cursor: "pointer",
+    fontWeight: 600,
+  }}
+>
+  Save Tone Profile
+</button>
+</div>
+</div>
+</div>
+)}
+</main>
+);
 }
