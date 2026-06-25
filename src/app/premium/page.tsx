@@ -3,13 +3,15 @@
 import { useState, useEffect } from "react";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { FreeMessageCounter } from "../components/FreeMessageCounter";
+import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
+
 
 export default function V1Page() {
   const supabase = createSupabaseBrowserClient();
 
   // ---------------- AUTH + PREMIUM ----------------
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isPremium, setIsPremium] = useState(false);
   const [freeUsed, setFreeUsed] = useState(0);
   const [loading, setLoading] = useState(false);
