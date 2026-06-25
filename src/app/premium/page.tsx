@@ -52,8 +52,6 @@ export default function V1Page() {
     loadUser();
   }, []);
 
-  
-
   // ---------------- CHECK PREMIUM PLAN ----------------
   useEffect(() => {
     async function checkPlan() {
@@ -85,16 +83,37 @@ export default function V1Page() {
       }}
     >
       {/* HEADER + AUTH BAR */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-      <img src="/tonedraft-logo.png" alt="ToneDraft logo" style={{ height: 40 }} />
-        <h1 style={{ fontSize: 30, fontWeight: 600, margin: 0 }}>ToneDraft - V1</h1>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 20,
+        }}
+      >
+        <img
+          src="/tonedraft-logo.png"
+          alt="ToneDraft logo"
+          style={{ height: 40 }}
+        />
 
-        <div style={{ marginLeft: "auto", marginBottom: 10, display: "flex", gap: 20 }}>
+        <h1 style={{ fontSize: 30, fontWeight: 600, margin: 0 }}>
+          ToneDraft - V1
+        </h1>
+
+        <div
+          style={{
+            marginLeft: "auto",
+            marginBottom: 10,
+            display: "flex",
+            gap: 20,
+          }}
+        >
           {!user && (
             <>
-              
-
-              
+              {/* empty for now */}
+            </>
+          )}
 
           {user && (
             <>
@@ -116,7 +135,6 @@ export default function V1Page() {
             </>
           )}
         </div>
-        
       </div>
 
       {/* VIEW DRAFTS */}
@@ -136,6 +154,10 @@ export default function V1Page() {
           </button>
         </a>
       </div>
+    </main>
+  );
+}
+
 
       {/* CALIBRATE TONE */}
       <div style={{ marginBottom: 16 }}>
@@ -157,15 +179,13 @@ export default function V1Page() {
       
 
       {/* INSTRUCTIONS */}
-      <p style={{ color: "#555", marginBottom: 24 }}>
-        1. Paste Your Tone Sample… ToneDraft extracts your style automatically.
-      </p>
-      <p style={{ color: "#555", marginBottom: 24 }}>
-        2. Write Your Prompt… ToneDraft blends your tone with the task.
-      </p>
-      <p style={{ color: "#555", marginBottom: 24 }}>
-        3. Generate & Save… Review, edit, and save to your workspace.
-      </p>
+      <><p style={{ color: "#555", marginBottom: 24 }}>
+  1. Paste Your Tone Sample… ToneDraft extracts your style automatically.
+</p><p style={{ color: "#555", marginBottom: 24 }}>
+    2. Write Your Prompt… ToneDraft blends your tone with the task.
+  </p><p style={{ color: "#555", marginBottom: 24 }}>
+    3. Generate & Save… Review, edit, and save to your workspace.
+  </p></>
 
       {/* MODE SWITCH */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16, marginTop: 16 }}>
@@ -216,15 +236,13 @@ export default function V1Page() {
       </div>
 
       {/* PROMPT LABEL */}
-      <label style={{ fontWeight: 600, marginBottom: 8, display: "block" }}>
-        {mode === "essay"
-          ? "Essay Prompt"
-          : mode === "post"
-          ? "Post Prompt"
-          : "Email"}
-      </label>
-
-      <FreeMessageCounter used={freeUsed} />
+      <><label style={{ fontWeight: 600, marginBottom: 8, display: "block" }}>
+  {mode === "essay"
+    ? "Essay Prompt"
+    : mode === "post"
+      ? "Post Prompt"
+      : "Email"}
+</label><FreeMessageCounter used={freeUsed} /></>
 
       {/* PROMPT TEXTAREA */}
       <textarea
